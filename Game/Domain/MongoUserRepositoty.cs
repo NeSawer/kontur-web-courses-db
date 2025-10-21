@@ -24,16 +24,16 @@ namespace Game.Domain
         public UserEntity FindById(Guid id)
             => userCollection.Find(u => u.Id == id).SingleOrDefault();
 
-        public UserEntity GetOrCreateByLogin(string login)
-        {
-            var found = userCollection.Find(u => u.Login == login).SingleOrDefault();
-            if (found is not null)
-                return found;
-
-            found = new(Guid.NewGuid()) { Login = login };
-            userCollection.InsertOne(found);
-            return found;
-        }
+        public UserEntity GetOrCreateByLogin(string login) =>
+            userCollection.FindOneAndUpdate(u => u.Login == login,
+                Builders<UserEntity>.Update
+                    .SetOnInsert(u => u.Id, Guid.NewGuid())
+                    .SetOnInsert(u => u.Login, login)
+                , new()
+                {
+                    ReturnDocument = ReturnDocument.After,
+                    IsUpsert = true,
+                });
 
         public void Update(UserEntity user)
         {
