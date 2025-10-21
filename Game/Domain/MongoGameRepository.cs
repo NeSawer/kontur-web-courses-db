@@ -36,8 +36,9 @@ namespace Game.Domain
         // Обновляет игру, если она находится в статусе GameStatus.WaitingToStart
         public bool TryUpdateWaitingToStart(GameEntity game)
         {
-            var updated = gameCollection.UpdateOne(g => g.Id == game.Id && g.Status == GameStatus.WaitingToStart,
-                Builders<GameEntity>.Update.Set(g => g.Status, GameStatus.Playing));
+            var updated = gameCollection.ReplaceOne(
+                g => g.Id == game.Id && g.Status == GameStatus.WaitingToStart,
+                game);
             return updated.IsAcknowledged && updated.ModifiedCount > 0;
         }
     }
